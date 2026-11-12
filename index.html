@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>메카독 미션맵 구성안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 11/11 보드와 같은 체계 — 머리말(과제 4문항 = 탭 4개) → 고정 탭 → 탭마다 맵/그림 + 설명 2단, 좁으면 1단 */
+:root{
+  --bg:#eceeec;--surface:#f8f9f8;--ink:#1c2220;--muted:#5b6662;--line:#c9d0cc;
+  --robot:#d9a520;--accent:#9a7400;--r1:#2b6fd6;--r2:#0e9488;--r3:#d9a520;--r4:#8b5a2b;
+  --ok:#2e8a55;--ok-bg:#dcefe3;--warn:#b87400;--warn-bg:#f6e8c8;--crit:#cc3229;--crit-bg:#f7dad6;
+  --info:#2b6fd6;--info-bg:#dde8f8;
+  --floor:#e2e5e2;--floor2:#d6dbd7;--zone-w:#d9dee6;--zone-m:#e6e2d8;--zone-c:#dfe6df;--box:#c9b48f;--rack:#7b8a9a;--mach:#8e8676;--wall:#8b9893;
+  --tape-green:#2fa35a;--tape-yellow:#e2bd12;--tape-blue:#2b6fd6;--gas:#7a4fc0;--heat:#e2582a;--person:#c2417f;--marker:#1c2220;--marker-bg:#ffffff;
+  --font-sans:"IBM Plex Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131715;--surface:#1b201e;--ink:#e3e8e5;--muted:#97a39e;--line:#323b37;
+  --robot:#e3b33a;--accent:#e8b820;--r1:#5b95ee;--r2:#2bb5a8;--r3:#e3b33a;--r4:#c08a55;
+  --ok:#55c084;--ok-bg:#1b3326;--warn:#e3a43a;--warn-bg:#3a2e14;--crit:#f0645c;--crit-bg:#3d1d1b;
+  --info:#6ea3f0;--info-bg:#1a2a40;
+  --floor:#202624;--floor2:#2a312e;--zone-w:#232a33;--zone-m:#2c2a24;--zone-c:#222a24;--box:#6b5d43;--rack:#7f93a8;--mach:#7d7666;--wall:#59635f;
+  --tape-green:#46c083;--gas:#ad86e6;--heat:#f07a4a;--person:#ec6fa8;--marker:#e3e8e5;--marker-bg:#1b201e;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131715;--surface:#1b201e;--ink:#e3e8e5;--muted:#97a39e;--line:#323b37;
+  --robot:#e3b33a;--accent:#e8b820;--r1:#5b95ee;--r2:#2bb5a8;--r3:#e3b33a;--r4:#c08a55;
+  --ok:#55c084;--ok-bg:#1b3326;--warn:#e3a43a;--warn-bg:#3a2e14;--crit:#f0645c;--crit-bg:#3d1d1b;
+  --info:#6ea3f0;--info-bg:#1a2a40;
+  --floor:#202624;--floor2:#2a312e;--zone-w:#232a33;--zone-m:#2c2a24;--zone-c:#222a24;--box:#6b5d43;--rack:#7f93a8;--mach:#7d7666;--wall:#59635f;
+  --tape-green:#46c083;--gas:#ad86e6;--heat:#f07a4a;--person:#ec6fa8;--marker:#e3e8e5;--marker-bg:#1b201e;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);font-size:14.5px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:26px;font-weight:700}
+h2{font-size:19px;font-weight:700}
+h3{font-size:15px;font-weight:600}
+p{margin:0}
+a{color:inherit}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+header{padding-block:28px 18px}
+.head-row{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:12.5px;white-space:nowrap}
+.chip b{font-family:var(--font-mono);font-weight:600}
+.chip.due{border-color:var(--crit);color:var(--crit)}
+.lede{margin-top:10px;color:var(--muted);max-width:70ch}
+
+/* 과제 4문항 */
+.qgrid{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.qcard{appearance:none;text-align:left;font:inherit;color:inherit;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:6px;align-content:start}
+.qcard:hover{border-color:var(--robot)}
+.qcard .qn{font-family:var(--font-mono);font-size:12px;color:var(--accent);font-weight:600}
+.qcard .qq{font-weight:700;font-size:15px}
+.qcard .qe{font-size:12.5px;color:var(--muted)}
+.qcard .qa{font-size:13.5px;border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
+.order{margin-top:12px;font-size:13px;color:var(--muted)}
+.order b{color:var(--ink)}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.tabrow{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabrow::-webkit-scrollbar{display:none}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;padding:12px 14px 11px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;display:flex;gap:7px;align-items:center}
+.tab .n{font-family:var(--font-mono);font-size:11.5px;font-weight:500}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--robot)}
+.tab:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+main{padding-block:24px 60px}
+section.panel{display:grid;gap:22px}
+.sec-head{display:grid;gap:6px}
+.sec-head p{color:var(--muted);max-width:72ch}
+.two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.two{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card>*+*{margin-top:10px}
+.stack{display:grid;gap:14px;min-width:0}
+
+.note{border-left:3px solid var(--warn);background:var(--warn-bg);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px}
+.note.crit{border-left-color:var(--crit);background:var(--crit-bg)}
+.note.ok{border-left-color:var(--ok);background:var(--ok-bg)}
+.note.info{border-left-color:var(--info);background:var(--info-bg)}
+.note b{font-weight:700}
+
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.pill{display:inline-block;font-size:11.5px;font-weight:600;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.pill.kit{background:var(--ok-bg);color:var(--ok)}
+.pill.buy{background:var(--warn-bg);color:var(--warn)}
+.pill.lap{background:var(--info-bg);color:var(--info)}
+.pill.no{background:var(--crit-bg);color:var(--crit)}
+
+/* map */
+.map svg{width:100%;height:auto;display:block}
+.map text{font-family:var(--font-sans);fill:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* scenes */
+.scenes{display:grid;gap:6px}
+.scene{appearance:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px;align-items:start;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.scene .t{font-family:var(--font-mono);font-size:12px;color:var(--muted);padding-top:2px}
+.scene .nm{font-weight:600}
+.scene .ds{font-size:12.5px;color:var(--muted)}
+.scene[aria-pressed="true"]{border-color:var(--robot);box-shadow:inset 3px 0 0 var(--robot)}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{appearance:none;font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px}
+.btn:hover{border-color:var(--robot)}
+.log{font-family:var(--font-mono);font-size:12.5px;display:grid;gap:4px;max-height:220px;overflow:auto}
+.log div{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:8px;align-items:baseline}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* features */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px;align-content:start}
+.feat h3{display:flex;gap:8px;align-items:center}
+.feat dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;font-size:13px}
+.feat dt{color:var(--muted);white-space:nowrap}
+.feat dd{margin:0}
+.feat .risk{font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.flow .box{flex:1 1 150px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);font-size:13px;min-width:0}
+.flow .box b{display:block;font-size:13.5px;margin-bottom:2px}
+.flow .arr{align-self:center;color:var(--muted);font-family:var(--font-mono)}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface);display:grid;gap:8px;align-content:start}
+.opt.rec{border-color:var(--robot);box-shadow:inset 0 3px 0 var(--robot)}
+.opt ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
+
+/* cost */
+.calc{display:grid;gap:14px}
+.field{display:grid;gap:6px}
+.field>label,.field>.lb{font-size:13px;font-weight:600}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{appearance:none;font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:5px 12px}
+.seg button[aria-pressed="true"]{border-color:var(--robot);background:var(--surface);font-weight:700;box-shadow:inset 0 -2px 0 var(--robot)}
+.total{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.total .big{font-family:var(--font-mono);font-size:30px;font-weight:600;font-variant-numeric:tabular-nums}
+.gets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
+.get{font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;display:flex;gap:8px;align-items:center;background:var(--bg)}
+
+/* robot figure */
+.robotfig svg{width:100%;height:auto;max-width:520px;display:block}
+.robotfig text{font-family:var(--font-sans);font-size:12px;fill:var(--ink)}
+
+.checks{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.checks input{margin-top:4px;width:16px;height:16px;accent-color:var(--ok);flex:none}
+.checks li.done label{text-decoration:line-through;color:var(--muted)}
+.src{font-size:12.5px;color:var(--muted)}
+.src a{color:var(--muted)}
+footer{padding-block:0 40px;font-size:12.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.robot-g{transition:transform .5s ease}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header>
+  <div class="head-row">
+    <div>
+      <div class="eyebrow">10조 · 메카독 · 11/12 과제</div>
+      <h1>미션맵 구성안 보드</h1>
+    </div>
+    <div class="chips">
+      <span class="chip">공간 <b>공장·창고</b></span>
+      <span class="chip">맵 <b>위 창고 / 아래 작업장</b></span>
+    </div>
+  </div>
+
+</header>
+</div>
+
+<nav class="tabs" aria-label="과제 탭">
+  <div class="wrap tabrow" role="tablist">
+    <button class="tab" role="tab" id="t-flow" data-tab="flow" aria-selected="true"><span class="n">1</span>시연 흐름</button>
+    <button class="tab" role="tab" id="t-map" data-tab="map" aria-selected="false"><span class="n">2</span>미션맵 · 재료 · 비용</button>
+    <button class="tab" role="tab" id="t-hw" data-tab="hw" aria-selected="false"><span class="n">3</span>HW 부품 · 비용</button>
+    <button class="tab" role="tab" id="t-how" data-tab="how" aria-selected="false"><span class="n">4</span>구현 방법</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ========== 1. 시연 흐름 ========== -->
+<section class="panel" id="p-flow" role="tabpanel" aria-labelledby="t-flow">
+  <div class="sec-head">
+    <div class="eyebrow">1 · 시연 흐름</div>
+    <h2>장면을 누르면 맵에서 무슨 일이 일어나는지 보입니다</h2>
+    <p>첫 바퀴는 아무 일 없이 돌아서 "이상이 없을 수도 있다"를 보여 줍니다. 그다음 바퀴부터 이벤트를 놓습니다. 위치는 GPS가 아니라 "지난 CP와 다음 CP 사이"로 표시합니다.</p>
+  </div>
+  <div class="two">
+    <div class="card map">
+      <div id="mapFlow"></div>
+      <div class="legend" style="margin-top:8px">
+        <span><i class="sw" style="background:var(--r1)"></i>1번</span>
+        <span><i class="sw" style="background:var(--r2)"></i>2번</span>
+        <span><i class="sw" style="background:var(--r3)"></i>3번</span>
+        <span><i class="sw" style="background:var(--r4)"></i>4번</span>
+        <span>점선 = 그 로봇이 이동한 길</span>
+        <span><i class="sw" style="background:var(--tape-green)"></i>순찰 길</span>
+        <span><i class="sw" style="background:var(--marker-bg);border:2px solid var(--marker)"></i>ArUco 마커 12곳</span>
+        <span><i class="sw" style="background:var(--heat)"></i>과열</span>
+        <span><i class="sw" style="background:var(--gas)"></i>가스 누출</span>
+        <span><i class="sw" style="background:var(--person)"></i>작업자 인형</span>
+        <span><i class="sw" style="background:var(--box)"></i>떨어진 박스</span>
+        <span><i class="sw" style="background:var(--crit)"></i>발화 · X(가지 말 것)</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="ctrl">
+        <button class="btn" id="prevS">◀ 이전</button>
+        <button class="btn" id="nextS">다음 ▶</button>
+        <span class="muted small" id="sceneNow"></span>
+      </div>
+      <div class="scenes" id="sceneList"></div>
+      <div class="card">
+        <div class="eyebrow">관제 화면 이벤트 로그 (여기까지)</div>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+  </div>
+  <div class="note info"><b>CP 12곳은 11/11 배치 그대로, 표시는 ArUco 마커:</b> 마커 번호가 곧 CP 번호라서, 하나만 밟으면 어디인지 바로 압니다. 노·파 지문 계산이 필요 없습니다. 나가는 길(CP11에서 왼쪽 → CP10 → CP5 → CP1)은 그대로 둡니다. 색 홀짝은 배 밑 XIAO가 안 될 때의 대체안입니다.</div>
+  <div class="note">물·기름은 뺐습니다. 카메라로 진짜 물·기름을 찾기 어렵고 색 시트 연출은 "그냥 색 인식"이라서, 바닥에 고이는 가스 누출로 바꿨습니다. 로봇 역할: 1번 보관동 윗길(장애물·과열), 2번 간선(가스), 3번 작업장, 4번 도크 대기 → 가스 재확인 → 대피 때 남은 사람 수색.</div>
+  <div class="card">
+    <h3>재확인 규칙 · 4번은 가스 누출 때만 출동 (시연 순서대로)</h3>
+    <p class="small muted" style="margin-top:4px">4개 다 4번이 가면 도크에서 먼 곳(장애물·과열, 약 4.5 m)까지 왕복하느라 시연 시간을 거의 다 씁니다. 그래서 이벤트마다 확인 방법을 다르게 둡니다.</p>
+    <div class="tbl-wrap" style="margin-top:8px"><table>
+      <tr><th>이벤트</th><th>도크에서 거리</th><th>확인 방법</th><th>이유</th></tr>
+      <tr><td><b>1 · 장애물</b></td><td class="num">약 4.5 m</td><td>발견한 1번이 <b>스스로</b> 3초 뒤 다시 잼</td><td>초음파는 확실해서 오탐이 적고, "3초 넘게 있으면"으로 이미 걸러짐</td></tr>
+      <tr><td><b>2 · 과열</b></td><td class="num">약 4.7 m</td><td>발견한 1번이 <b>멈춰서 10초쯤 계속</b> 잼 → 확정, 관리자 호출</td><td>제일 멂. 온도가 계속 높게 나오면 그 자체로 확실함</td></tr>
+      <tr><td><b>3 · 가스 누출</b></td><td class="num">약 1.7 m</td><td><b>4번이 출동해 재확인</b> (구간 입구에서)</td><td>MQ-2는 다른 냄새에도 반응해 오탐이 날 수 있음. 도크에서 가까워 빨리 감. 바로 다음이 화재라 확정이 중요함</td></tr>
+      <tr><td><b>4 · 쓰러짐</b></td><td class="num">약 1 m (CP11에서 수색)</td><td><b>재확인 없이 바로 긴급</b></td><td>대피 중 남은 사람이라 확인보다 알림이 먼저. 대피 모드부터 작업장을 수색하던 4번이 발견</td></tr>
+    </table></div>
+    <p class="small muted" style="margin-top:8px">거리는 맵 기준 대략값입니다. 메카독 걷는 속도는 아직 재지 않았습니다.</p>
+  </div>
+  <div class="card">
+    <h3>근거 숫자 · 발표 도입용</h3>
+    <div class="tbl-wrap"><table>
+      <tr><th>숫자</th><th>내용</th><th>출처</th></tr>
+      <tr><td class="num">589명</td><td>2024 재해조사 대상 사고 사망자. 떨어짐 38.5%, 물체에 맞음 14.1%, 끼임 11.2%</td><td><a href="https://www.ceoscoredaily.com/page/view/2025032414510181487" target="_blank" rel="noopener">CEO스코어데일리</a></td></tr>
+      <tr><td class="num">142,771명</td><td>2024 전체 산업재해자 (위와 집계 기준 다름)</td><td><a href="https://newstomato.com/ReadNews.aspx?no=1270843" target="_blank" rel="noopener">뉴스토마토</a></td></tr>
+      <tr><td class="num">19.8%</td><td>넘어짐 = 재해자 유형 1위 (28,244명). 출처·연도 불명확해 원자료 확인 필요 → 통로 장애물과 연결</td><td><a href="http://office.shinwooi.co.kr/board/download3.asp?type=2&amp;category=7&amp;seq=351" target="_blank" rel="noopener">2024 산업재해현황 자료</a></td></tr>
+      <tr><td class="num">1.5배</td><td>LPG가 공기보다 무거워 바닥에 고임. 경보기는 바닥 30 cm 이내 권고</td><td><a href="https://kfpa.or.kr/mem/pdf_file/H/102/H102_8.pdf" target="_blank" rel="noopener">한국화재보험협회</a></td></tr>
+      <tr><td class="num">?</td><td>공장 가스 누출 사례: 2024.2 인천 현대제철, 1명 사망 6명 부상 (가스 종류 미확인)</td><td><a href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=17595" target="_blank" rel="noopener">고용노동부</a></td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ========== 2. 미션맵 · 재료 ========== -->
+<section class="panel" id="p-map" role="tabpanel" aria-labelledby="t-map" hidden>
+  <div class="sec-head">
+    <div class="eyebrow">2 · 미션맵 · 재료 · 비용</div>
+    <h2>11/11 보드 맵 그대로, 이벤트 소품만 바꿉니다</h2>
+    <p>재료는 로봇에 다는 부품이 아니라 <b>무대 소품</b>입니다. 번호는 맵 <b>좌상단부터 오른쪽 → 아래 순서</b>로 매겼고, 아래 표 번호와 같습니다.</p>
+  </div>
+  <div class="two">
+    <div class="card map">
+      <div id="mapMat"></div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>맵 구역</h3>
+        <div class="tbl-wrap"><table>
+          <tr><th>구역</th><th>있는 것</th><th>놓을 이벤트</th></tr>
+          <tr><td><b>보관동·창고 (위)</b></td><td>A1·A2·A3 보관 랙, 윗길 CP1~4</td><td>A1 랙 하단 과열, 떨어진 박스</td></tr>
+          <tr><td><b>간선 (가운데)</b></td><td>C1·C2, 양 끝 비상구, CP5~9</td><td>가스 누출 (LPG 통 옆)</td></tr>
+          <tr><td><b>작업장 (아래)</b></td><td>B1·B2 작업 라인, 사무·도크, CP10~12</td><td>쓰러진 작업자 (B2 앞)</td></tr>
+        </table></div>
+      </div>
+      <div class="note info"><b>11/11 실측 반영:</b> 메카독이 제자리에서 잘 안 꺾입니다. 그래서 모서리는 곡선 테이프, 길 끝은 회전 고리, 벽과 길 사이는 회전 반지름 R 이상 띄웁니다.</div>
+      <div class="note"><b>축척:</b> 1:8이면 사람 170 cm ≈ 21 cm입니다. 팀원이 직접 누우면 맵보다 커서 인형을 씁니다.</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>재료 목록 · 번호는 맵 좌상단부터</h3>
+    <div class="tbl-wrap"><table>
+      <tr><th>#</th><th>재료</th><th>수량</th><th>용도</th></tr>
+      <tr><td class="num">1</td><td>ArUco 마커 출력물 (코팅)</td><td class="num">12 + 여분</td><td>CP 12곳. 약 4 cm 4×4 마커, 번호 = CP 번호. 라인 위에 붙임</td></tr>
+      <tr><td class="num">2</td><td>초록 바닥 테이프 5 cm</td><td class="num">50 m</td><td>순찰 길</td></tr>
+      <tr><td class="num">3</td><td>골판지 박스 (소)</td><td class="num">3~4개</td><td>떨어진 박스 (장애물)</td></tr>
+      <tr><td class="num">4</td><td>핫팩</td><td class="num">4~6개</td><td>A1 랙 하단 과열 연출 (리허설 + 본 시연)</td></tr>
+      <tr><td class="num">5</td><td>골판지 박스 (중)</td><td class="num">10~20개</td><td>A1~A3 보관 랙, B1·B2 작업 라인</td></tr>
+      <tr><td class="num">6</td><td>흰 바닥 테이프</td><td class="num">20 m</td><td>보관동·간선·작업장 경계</td></tr>
+      <tr><td class="num">7</td><td>LPG 통 모형 (작은 원통 + 노란 라벨)</td><td class="num">1개</td><td>가스가 새는 자리 표시</td></tr>
+      <tr><td class="num">8</td><td>작은 컵 + 알코올 솜 (손소독제)</td><td class="num">2개</td><td>가스 누출 연출. MQ-2가 실제로 반응함</td></tr>
+      <tr><td class="num">9</td><td>인형·피규어 20~30 cm + 형광 조끼 천</td><td class="num">2개 + 1</td><td>서 있는 / 쓰러진 작업자. 조끼 색으로 쓰러짐 판단</td></tr>
+      <tr><td class="num">10</td><td>폼보드 A2</td><td class="num">6장</td><td>가벽, 구역 이름판, 비상구 1·2 표지, 곡선 틀</td></tr>
+      <tr><td class="num">11</td><td>밝은 색 바닥 매트 (선택)</td><td class="num">5 × 5 m</td><td>바닥 전체. 반사 줄이기</td></tr>
+      <tr><td class="num">12</td><td>줄자 5 m 이상</td><td class="num">1</td><td>배치, 회전 반지름 실측 (맵 밖)</td></tr>
+    </table></div>
+    <p class="small muted">11/11 목록에서 빠진 것: 빨간 스티커, 검정 카드, 빨간 LED 경고등, 분홍 밴드. 비상구 표지는 대피 모드에 필요해서 폼보드(10번)로 만듭니다.</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">재료 비용 · 국내 배송 · 비회원 구매 가능</div>
+    <h3 style="margin-top:4px">사야 하는 것은 나비엠알오 한 곳에서, 약 5만 원</h3>
+    <div class="tbl-wrap" style="margin-top:8px"><table>
+      <tr><th>#</th><th>재료</th><th>어디서</th><th>단가</th><th>수량</th><th>소계</th><th>비고</th></tr>
+<tr><td class="num">1</td><td>ArUco 마커</td><td>직접 출력 (프린터)</td><td class="num">–</td><td class="num">–</td><td class="num"><b>0원</b></td><td class="small">코팅은 아래 선택 항목</td></tr>
+<tr><td class="num">2</td><td>초록 바닥 테이프</td><td>나비엠알오 · <a href="https://www.navimro.com/g/1739320/" target="_blank" rel="noopener">블렉스 바닥라인 녹색 50 mm × 33 m</a></td><td class="num">4,169원</td><td class="num">2롤</td><td class="num"><b>8,338원</b></td><td class="small">66 m</td></tr>
+<tr><td class="num">3</td><td>박스 (소)</td><td>재활용 택배 박스</td><td class="num">–</td><td class="num">3~4개</td><td class="num"><b>0원</b></td><td class="small"></td></tr>
+<tr><td class="num">4</td><td>핫팩</td><td>나비엠알오 · <a href="https://www.navimro.com/g/2228796/" target="_blank" rel="noopener">핫팩 부착용 40 g, 10개</a></td><td class="num">4,169원</td><td class="num">1팩</td><td class="num"><b>4,169원</b></td><td class="small">다이소 6개입 2,000원은 비회원 구매 미확인</td></tr>
+<tr><td class="num">5</td><td>박스 (중) · 랙·작업 라인</td><td>재활용 택배 박스</td><td class="num">–</td><td class="num">10~20개</td><td class="num"><b>0원</b></td><td class="small">사면 나비엠알오 <a href="https://www.navimro.com/g/3514791/" target="_blank" rel="noopener">골판지 박스 5장</a> 8,239원 (크기 미확인). 와이어 큐브는 국내 비회원 구매처 없음</td></tr>
+<tr><td class="num">6</td><td>흰 바닥 테이프</td><td>나비엠알오 · <a href="https://www.navimro.com/g/333336/" target="_blank" rel="noopener">라인마킹테이프 흰색 50 mm × 33 m</a></td><td class="num">3,949원</td><td class="num">1롤</td><td class="num"><b>3,949원</b></td><td class="small"></td></tr>
+<tr><td class="num">7</td><td>LPG 통 모형</td><td>페트병·종이컵 + 노란 종이</td><td class="num">–</td><td class="num">1개</td><td class="num"><b>0원</b></td><td class="small"></td></tr>
+<tr><td class="num">8</td><td>알코올 솜</td><td>나비엠알오 · <a href="https://www.navimro.com/g/301800/" target="_blank" rel="noopener">알콜솜 100매</a></td><td class="num">8,679원</td><td class="num">1팩</td><td class="num"><b>8,679원</b></td><td class="small">손소독제가 있으면 0원 · 다이소 2,000원은 비회원 미확인</td></tr>
+<tr><td class="num">9</td><td>인형 + 형광 조끼</td><td>조끼: 나비엠알오 · <a href="https://www.navimro.com/g/2718224/" target="_blank" rel="noopener">신호수 망사 조끼</a></td><td class="num">3,619원~</td><td class="num">1벌</td><td class="num"><b>3,619원</b></td><td class="small">인형(20~30 cm)은 못 찾음 → 팀원 보유 피규어나 매장 구매</td></tr>
+<tr><td class="num">10</td><td>폼보드</td><td>나비엠알오 · <a href="https://www.navimro.com/g/116999/" target="_blank" rel="noopener">백색 폼보드 5 mm 600×900</a></td><td class="num">7,029원</td><td class="num">3장</td><td class="num"><b>21,087원</b></td><td class="small">A2가 없어 1장을 반으로 잘라 6장</td></tr>
+<tr><td class="num">11</td><td>바닥 매트 (선택)</td><td>–</td><td class="num">–</td><td class="num">–</td><td class="num"><b>제외</b></td><td class="small">필요하면 따로 조사</td></tr>
+<tr><td class="num">12</td><td>줄자 5 m</td><td>팀 보유 확인</td><td class="num">–</td><td class="num">1개</td><td class="num"><b>0원</b></td><td class="small">다이소 5 m 2,000원은 비회원 미확인</td></tr>
+      <tr><td></td><td colspan="4"><b>필수 합계</b> (나비엠알오)</td><td class="num"><b>49,841원</b></td><td class="small">배송비 3,300원 (5만 원 미만, VAT 별도 기준) → <b>약 5.3만 원</b></td></tr>
+      <tr><td></td><td colspan="4">선택 · 코팅필름 A4 100장 (<a href="https://www.navimro.com/g/227636/" target="_blank" rel="noopener">나비엠알오</a>)</td><td class="num">10,989원</td><td class="small">넣으면 합계 60,830원으로 <b>배송비 무료</b>. 기계 코팅 전용이라 학교 코팅기가 있을 때만</td></tr>
+      <tr><td></td><td colspan="4">센서 · MQ-2 (아두이노 키트에 없을 때, 아이씨뱅큐)</td><td class="num">2,000원</td><td class="small">위 HW 탭 구매처 참고. MLX90614(과열 2안)는 11,200원</td></tr>
+    </table></div>
+    <p class="small muted" style="margin-top:8px">가격은 VAT 포함, 11/11 목록·상품 페이지 기준입니다. 나비엠알오 로그인 화면에 "비회원 구매하기"가 있고, 5만 원(VAT 별도) 이상이면 배송비가 무료입니다. 주문 전에 가격·재고를 다시 확인하세요.</p>
+  </div>
+
+</section>
+
+<!-- ========== 3. HW 부품 · 비용 ========== -->
+<section class="panel" id="p-hw" role="tabpanel" aria-labelledby="t-hw" hidden>
+  <div class="sec-head">
+    <div class="eyebrow">3 · HW 부품 · 비용</div>
+    <h2>보급받은 XIAO를 배 밑에 달면 추가 비용이 거의 없습니다</h2>
+    <p>팀원 모두 XIAO ESP32-S3 Sense(카메라 달린 보드)를 보급받았습니다. 로봇 4대에 1개씩 달면 카메라 비용은 0원입니다. 10/23 실습에서 만든 카메라 스트리밍 코드(<span class="mono">xiao.md/supabase_dashboard/camera_stream.h</span>, <span class="mono">http://보드IP/stream</span>)를 그대로 씁니다.</p>
+  </div>
+  <div class="two">
+    <div class="card robotfig">
+      <h3>메카독 한 대 · 옆에서 본 모습</h3>
+      <svg viewBox="0 0 560 300" role="img" aria-label="메카독 옆모습: 앞쪽 키트 카메라와 초음파, 배 밑에 아래를 보는 XIAO, 바닥의 ArUco 마커">
+        <line x1="10" y1="262" x2="550" y2="262" stroke="var(--wall)" stroke-width="2"/>
+        <path d="M253 154 L232 262 L298 262 Z" fill="var(--info)" opacity=".18"/>
+        <rect x="240" y="258" width="50" height="8" fill="var(--marker)"/>
+        <rect x="248" y="259" width="10" height="6" fill="var(--marker-bg)"/><rect x="270" y="259" width="10" height="6" fill="var(--marker-bg)"/>
+        <rect x="110" y="96" width="250" height="44" rx="12" fill="var(--floor)" stroke="var(--wall)" stroke-width="2"/>
+        <g stroke="var(--wall)" stroke-width="9" stroke-linecap="round">
+          <line x1="140" y1="140" x2="125" y2="258"/><line x1="175" y1="140" x2="190" y2="258"/>
+          <line x1="300" y1="140" x2="285" y2="258"/><line x1="335" y1="140" x2="350" y2="258"/>
+        </g>
+        <rect x="360" y="70" width="62" height="52" rx="10" fill="var(--floor)" stroke="var(--wall)" stroke-width="2"/>
+        <circle cx="414" cy="86" r="7" fill="var(--ok)"/>
+        <rect x="414" y="102" width="20" height="14" rx="3" fill="var(--ok)"/>
+        <rect x="236" y="140" width="34" height="14" rx="3" fill="var(--warn)"/>
+        <circle cx="228" cy="146" r="4" fill="var(--robot)"/>
+        <g font-size="12.5">
+          <line x1="421" y1="84" x2="460" y2="56" stroke="var(--ok)"/><text x="430" y="34" style="fill:var(--ok)" font-weight="700">키트 카메라 · 앞</text><text x="430" y="50" style="fill:var(--ok)" font-size="11.5">초록 라인 + 형광 조끼</text>
+          <line x1="434" y1="110" x2="470" y2="140" stroke="var(--ok)"/><text x="440" y="158" style="fill:var(--ok)" font-weight="700">초음파 · 앞</text><text x="440" y="173" style="fill:var(--ok)" font-size="11.5">장애물</text>
+          <line x1="270" y1="152" x2="362" y2="204" stroke="var(--warn)"/><text x="366" y="206" style="fill:var(--warn)" font-weight="700">XIAO · 배 밑, 아래를 봄</text><text x="366" y="222" style="fill:var(--warn)" font-size="11.5">ArUco 마커 + 가스·온도 센서 연결</text>
+          <line x1="226" y1="148" x2="90" y2="196" stroke="var(--robot)"/><text x="14" y="214" style="fill:var(--ink)" font-size="11.5">아두이노 키트 흰 LED (그늘 조명)</text>
+          <text x="235" y="86" text-anchor="middle" style="fill:var(--muted)" font-size="11.5">매트릭스 · MP3 · ESP32 본체</text>
+          <text x="265" y="288" text-anchor="middle" style="fill:var(--ink)" font-size="11.5" font-weight="700">바닥 ArUco 마커 (약 4 cm, 라인 위)</text>
+        </g>
+      </svg>
+      <p class="small muted">초록 = 메카독 키트 · 주황 = 보급받은 XIAO · 노랑 점 = 아두이노 키트 LED</p>
+    </div>
+    <div class="card">
+      <h3>부품 목록</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th>부품</th><th></th><th>하는 일</th></tr>
+        <tr><td>ESP32-S3 비전 모듈</td><td><span class="pill kit">메카독 키트</span></td><td>앞을 봄. 초록 라인 따라가기 + 형광 조끼(쓰러짐)</td></tr>
+        <tr><td>초음파 (RGB)</td><td><span class="pill kit">메카독 키트</span></td><td>장애물 거리</td></tr>
+        <tr><td>도트매트릭스 · MP3</td><td><span class="pill kit">메카독 키트</span></td><td>X·대피 화살표 표시, "괜찮으세요?"·대피 안내 음성</td></tr>
+        <tr><td><b>XIAO ESP32-S3 Sense</b></td><td><span class="pill kit">보급품 · 1인 1개</span></td><td>배 밑에서 바닥을 봄 → 영상을 노트북으로 (ArUco). 가스·온도 센서 값도 같이 보냄</td></tr>
+        <tr><td>MQ-2 가스 센서</td><td><span class="pill lap">아두이노 키트 · 없으면 몇천 원</span></td><td>가스 누출. 배 밑, 바닥 가까이</td></tr>
+        <tr><td>흰색 LED</td><td><span class="pill kit">아두이노 키트</span></td><td>배 밑 그늘 밝히기</td></tr>
+        <tr><td>온도 센서 (DHT11·LM35 등)</td><td><span class="pill lap">아두이노 키트 · 구성 확인</span></td><td>과열 1안. 주변 공기 온도라 핫팩 바로 옆을 지나가야 함</td></tr>
+        <tr><td>비접촉 온도 센서 MLX90614 (GY-906)</td><td><span class="pill buy">키트 센서로 약하면 구매 · 약 1.1만 원~</span></td><td>과열 2안. 체온계처럼 겨눈 곳(랙 하단) 표면 온도를 바로 잼</td></tr>
+                <tr><td>소형 배터리</td><td><span class="pill buy">필요할 때만</span></td><td>메카독 포트 5V로 XIAO가 안 돌 때</td></tr>
+        <tr><td>공유기 · 노트북</td><td><span class="pill lap">팀 보유 확인</span></td><td>연결, 마커 판단, 관제 화면</td></tr>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="card calc">
+    <div>
+      <div class="eyebrow">추가 비용 · 추정치</div>
+      <h3 style="margin-top:4px">카메라는 0원. 남은 선택은 전원과 과열 센서뿐입니다</h3>
+    </div>
+    <div class="two">
+      <div class="calc">
+        <div class="field">
+          <span class="lb">XIAO 전원</span>
+          <div class="seg" id="segPow">
+            <button data-v="port" aria-pressed="true">메카독 포트 5V (0원)</button><button data-v="bat" aria-pressed="false">소형 배터리 4개 (약 4만 원)</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="lb">과열 감지</span>
+          <div class="seg" id="segHeat">
+            <button data-v="kit" aria-pressed="true">아두이노 키트 온도 센서 (0원)</button><button data-v="mlx" aria-pressed="false">MLX90614 1개 (약 1.1만 원)</button>
+          </div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="total"><span class="big" id="costBig">-</span><span class="muted small">XIAO 4대 0원 포함 · 공유기 제외</span></div>
+        <div class="gets" id="gets"></div>
+        <div class="note" id="costNote"></div>
+      </div>
+    </div>
+    <p class="src">MLX90614 가격은 아이씨뱅큐 11,200원 기준 (아래 구매처). 참고로 XIAO를 국내에서 새로 사면 나비엠알오 38,489원(11/20 출하), 디바이스마트 23,200원(품절)이었습니다.</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">구매처 · 국내 배송 · 비회원 구매 가능</div>
+    <h3 style="margin-top:4px">살 수도 있는 것: MQ-2(가스), MLX90614(과열 2안)</h3>
+    <p class="small muted">아두이노 키트에 있으면 안 사도 됩니다. 비회원 구매가 확인된 곳만 넣었습니다. 디바이스마트는 비회원 구매가 안 보이고 두 센서 모두 검색 결과가 없었습니다.</p>
+    <div class="tbl-wrap" style="margin-top:8px"><table>
+      <tr><th>센서</th><th>쇼핑몰</th><th>상품</th><th>가격</th><th>배송</th><th>비고</th></tr>
+      <tr><td rowspan="3"><b>MQ-2</b></td><td>아이씨뱅큐</td><td><a href="https://www.icbanq.com/P014160265" target="_blank" rel="noopener">(PP-A205) MQ-2 가스센서 모듈</a></td><td class="num">2,000원</td><td>국내 2~3일</td><td>반품 불가(NCNR)</td></tr>
+      <tr><td>에듀이노</td><td><a href="https://eduino.kr/product/detail.html?product_no=120&amp;cate_no=34&amp;display_group=1" target="_blank" rel="noopener">MQ-2 가스센서 모듈</a></td><td class="num">2,500원</td><td>상세 페이지 확인</td><td>"비회원도 상품구매가 가능합니다"</td></tr>
+      <tr><td>나비엠알오</td><td><a href="https://www.navimro.com/g/3244014/" target="_blank" rel="noopener">반도체식 가연성 가스센서 (MQ-2)</a></td><td class="num">2,959원</td><td>11/16 출하</td><td>VAT 포함 가격</td></tr>
+      <tr><td rowspan="3"><b>MLX90614</b><br><span class="small muted">GY-906</span></td><td>아이씨뱅큐</td><td><a href="https://www.icbanq.com/P019040589" target="_blank" rel="noopener">(PP-A289) GY-906 MLX90614</a></td><td class="num">11,200원</td><td>국내 2~3일</td><td><b>제일 쌈</b> · 반품 불가(NCNR)</td></tr>
+      <tr><td>나비엠알오</td><td><a href="https://www.navimro.com/g/1674429/" target="_blank" rel="noopener">GY-906 MLX90614ESF</a></td><td class="num">31,889원</td><td>11/18 출하</td><td>VAT 포함 가격</td></tr>
+      <tr><td>에듀이노</td><td><a href="https://eduino.kr/" target="_blank" rel="noopener">비접촉 적외선 IR 온도센서 모듈 (상품번호 274)</a></td><td class="num">49,000원</td><td>상세 페이지 확인</td><td>모델명 확인 필요</td></tr>
+    </table></div>
+    <p class="small muted" style="margin-top:8px">추천: 둘 다 <b>아이씨뱅큐</b>에서 한 번에 (약 1.3만 원). 가격·재고는 목록 페이지 기준이라 주문 전에 상세 페이지에서 다시 확인하세요. 아이씨뱅큐 로그인 화면에 "비회원 주문", 나비엠알오에 "비회원 구매하기"가 있습니다.</p>
+  </div>
+</section>
+
+<!-- ========== 4. 구현 방법 ========== -->
+<section class="panel" id="p-how" role="tabpanel" aria-labelledby="t-how" hidden>
+  <div class="sec-head">
+    <div class="eyebrow">4 · 구현 방법</div>
+    <h2>앞은 키트 카메라, 배 밑은 XIAO가 봅니다</h2>
+    <p>키트 카메라는 한 번에 기능 하나만 됩니다(기능마다 펌웨어를 따로 올림). 그래서 키트 카메라는 앞을 보며 라인을 따라가고, 보급받은 XIAO는 배 밑에서 바닥의 ArUco 마커를 읽습니다.</p>
+  </div>
+
+  <div class="card">
+    <h3>신호가 흐르는 길</h3>
+    <div class="flow">
+      <div class="box"><b>메카독 본체 · 앞</b>키트 카메라: 라인 + 조끼 색 · 초음파: 장애물</div>
+      <span class="arr">+</span>
+      <div class="box"><b>XIAO · 배 밑</b>바닥 영상을 Wi-Fi로 보냄 (10/23 스트리밍 코드)</div>
+      <span class="arr">→</span>
+      <div class="box"><b>노트북</b>마커 번호 = 지금 위치 · 가스·온도 값 판단</div>
+      <span class="arr">→</span>
+      <div class="box"><b>관제 화면 + 메카독</b>지도에 표시 · 로봇은 멈춤 · X · 음성</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">체크포인트 · 메카독이 지금 어디 있나</div>
+    <h3 style="margin-top:4px">ArUco로 갑니다. 색 홀짝은 대체안</h3>
+    <div class="tbl-wrap" style="margin-top:10px"><table>
+      <tr><th></th><th>색 홀짝</th><th>ArUco · 채택</th></tr>
+      <tr><td><b>위치 아는 법</b></td><td>노·파 순서를 이어 붙여 계산 (지문)</td><td><b>마커 하나만 보면 바로 "CP7"</b>. 순서 계산 없음</td></tr>
+      <tr><td><b>출동할 때</b></td><td>파노노노 4개를 지나야 CP1인지 앎</td><td>CP1 마커를 보는 순간 앎</td></tr>
+      <tr><td><b>하나 놓치면</b></td><td>같은 색 연속으로 알아챔. 2개 연속 놓치면 틀어짐</td><td>다음 마커에서 바로 다시 맞음</td></tr>
+      <tr><td><b>다른 색과 충돌</b></td><td>CP 색과 다른 색 표식(조끼 등)이 헷갈릴 수 있음</td><td>흑백이라 안 겹침</td></tr>
+      <tr><td><b>비용</b></td><td>0원 (테이프)</td><td>0원 (보급품 XIAO + 종이 출력)</td></tr>
+      <tr><td><b>쓰는 카메라</b></td><td>키트 카메라 (라인과 같이)</td><td>배 밑 XIAO → 노트북 OpenCV</td></tr>
+    </table></div>
+    <p class="small muted" style="margin-top:8px">색 홀짝은 배 밑 XIAO가 안 될 때(초점·흔들림 실측 실패) 쓰는 대체안으로 남겨 둡니다. 같은 CP 자리에 테이프만 바꿔 붙이면 됩니다.</p>
+  </div>
+
+  <div class="card">
+    <h3>배 밑에 XIAO 달기 · 가능합니다</h3>
+    <div class="cmp" style="margin-top:10px">
+      <div class="opt">
+        <h3>좋은 점</h3>
+        <ul>
+          <li>마커를 <b>바로 위에서</b> 봐서 비스듬히 보이는 문제가 없음</li>
+          <li>마커를 바닥 라인 위에 붙이면 되니 세울 판이 필요 없음</li>
+          <li>마커를 밟는 순간 = 그 CP에 있음. 위치가 정확함</li>
+        </ul>
+      </div>
+      <div class="opt">
+        <h3>붙일 때 위치를 맞추며 볼 것</h3>
+        <ul>
+          <li><b>초점:</b> 배 밑은 바닥과 5~8 cm라 가까움. OV2640·OV3660은 초점 고정이라 흐릴 수 있음 → 마커를 굵은 4×4로 크게. OV5640(자동 초점)이면 유리</li>
+          <li><b>보이는 넓이:</b> 높이 약 7 cm면 바닥이 폭 약 6~7 cm만 보임(추정) → 마커는 약 4 cm</li>
+          <li><b>그늘:</b> 배 밑은 어두움 → 아두이노 키트 흰 LED로 비춤</li>
+          <li><b>흔들림:</b> 걸을 때 위아래로 흔들림 → CP 위에서 잠깐 멈추면 확실</li>
+          <li><b>라인 추적 방해:</b> 초록 라인 위 흑백 마커를 앞 카메라가 "라인 끊김"으로 볼 수 있음 → 마커를 작게, 안 되면 라인 바로 옆에</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat">
+      <h3><i class="sw" style="background:var(--box)"></i>장애물</h3>
+      <dl><dt>감지</dt><dd>초음파 (앞)</dd><dt>기준</dt><dd>30 cm 안에 3초 넘게 있음</dd><dt>소품</dt><dd>떨어진 박스</dd><dt>처리</dt><dd><span class="pill kit">메카독 안</span></dd></dl>
+      <p class="risk">11/11에 정한 기준 그대로. 지나가는 물체와 구분하려고 3초를 둡니다.</p>
+    </div>
+    <div class="feat">
+      <h3><i class="sw" style="background:var(--heat)"></i>과열 (화재 전)</h3>
+      <dl><dt>감지</dt><dd>1안 키트 온도 센서 · 2안 비접촉 MLX90614</dd><dt>기준</dt><dd>평소보다 크게 높은 온도 · 45℃ 초과 (실측해서 조정)</dd><dt>소품</dt><dd>핫팩을 랙 하단에</dd><dt>처리</dt><dd><span class="pill lap">XIAO에 연결 → 노트북</span></dd></dl>
+      <p class="risk">키트 온도 센서는 공기 온도라 핫팩 바로 옆에서 잠깐 멈춰 잽니다. 약하면 MLX90614(약 1.1만 원)로 랙 하단을 겨눠 표면 온도를 잽니다. 불꽃 센서는 불꽃만 봐서 핫팩(약 50℃)은 못 잡습니다. 진짜 불·연기는 못 쓰니 "불이 나기 전 이상 발열"로 말합니다.</p>
+    </div>
+    <div class="feat">
+      <h3><i class="sw" style="background:var(--gas)"></i>가스 누출</h3>
+      <dl><dt>감지</dt><dd>MQ-2 가스 센서 (배 밑, 바닥 가까이)</dd><dt>기준</dt><dd>평소 값보다 크게 오름이 2초 넘게 (실측해서 조정)</dd><dt>소품</dt><dd>컵에 담은 알코올 솜 + LPG 통 모형</dd><dt>처리</dt><dd><span class="pill lap">XIAO에 연결 → 노트북</span></dd></dl>
+      <p class="risk">LPG는 공기보다 약 1.5배 무거워 바닥에 고이고, 경보기도 바닥 30 cm 안에 달도록 권고합니다. 키 낮은 메카독이 딱 그 높이를 지나갑니다. MQ-2는 가스 종류를 구분 못 해 "가연성 가스 누출"로 말하고, 켜고 몇 분 예열이 필요합니다.</p>
+    </div>
+    <div class="feat">
+      <h3><i class="sw" style="background:var(--person)"></i>사람 쓰러짐</h3>
+      <dl><dt>감지</dt><dd>앞 키트 카메라 · 두 번째 색</dd><dt>기준</dt><dd>형광 조끼 색 덩어리가 가로 > 세로 1.3배, 2초 넘게</dd><dt>소품</dt><dd>인형 20~30 cm + 형광 조끼</dd><dt>누가</dt><dd>대피 모드 때 수색하던 4번</dd><dt>처리</dt><dd><span class="pill kit">메카독 안</span></dd></dl>
+      <p class="risk">키트 색 인식은 색 2가지를 동시에 잡습니다(슬롯 0 초록 라인, 슬롯 1 조끼). 라인을 따라가며 둘 다 되는지 실측해야 합니다. XIAO가 아래를 보니 사람 인식(YOLO)은 쓰지 않습니다.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>위험 구역 대피 모드 · 화재와 가스 둘 다</h3>
+    <div class="tbl-wrap" style="margin-top:8px"><table>
+      <tr><th>켜지는 계기</th><th>위험 구역</th><th>안내</th></tr>
+      <tr><td><b>화재</b> · 노트북 화재 버튼 (기존 화재 감지기 역할)</td><td>불난 곳 (시연: A1 랙)</td><td>가스·불 구간을 건너지 않는 가장 가까운 비상구로 (시연: 서쪽은 비상구 1, 동쪽은 비상구 2)</td></tr>
+      <tr><td><b>가스 누출 확정</b> · 4번 재확인 후</td><td>가스 구간 (CP6~CP7)</td><td>"가스 누출, 불 쓰지 말고 대피하세요"</td></tr>
+    </table></div>
+    <ul class="small" style="margin:10px 0 0;padding-left:18px;display:grid;gap:4px">
+      <li><b>로봇이 하는 일은 같음:</b> 위험 구역 길은 X, 3대는 갈림길·사각지대(CP2·CP6·CP11)에 서서 매트릭스 화살표 + 음성으로 가장 가까운 안전한 비상구 안내, <b>4번은 미처 대피하지 못한 사람 수색</b></li>
+      <li><b>순찰 정보를 씀:</b> 평소 순찰로 알게 된 장애물·가스 구간을 대피 경로에서 뺌. 고정 유도등은 이걸 모름</li>
+      <li><b>시연은 화재 한 번:</b> 화재 대피 중에 가스 구간도 같이 피함. 가스 대피는 "같은 모드가 켜진다"로 한 줄 설명</li>
+      <li><b>질문 대비 · 로봇이 불씨가 되지 않나:</b> 실제 가스 현장 로봇은 방폭 인증이 필요함. 그래서 로봇은 가스 구간에 들어가지 않고 바깥에서만 안내, 4번 재확인도 구간 입구에서만 잼</li>
+    </ul>
+  </div>
+
+  <div class="note crit"><b>반박 대비:</b> 예전 탈락 기록에 "로봇에 온도센서로 불 찾기 → 천장 감지기가 이미 있음"이 있습니다. 천장 감지기가 못 보는 <b>랙 하단·바닥 높이의 과열</b>을 잡는다고 해야 피할 수 있습니다. 가스도 같은 질문("경보기가 이미 있지 않나")이 나올 수 있어서, 경보기가 없는 구석과 랙 사이를 순찰한다고 답합니다.</div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  <p>글로 된 전체 내용: 사전조사/26.11.12사전조사/'26.11.12. 사전조사 결과.md · 출처 링크는 그 문서 끝에 모여 있습니다.</p>
+</footer>
+
+<script>
+(function(){
+  // ---------- tabs ----------
+  const tabs=[...document.querySelectorAll('.tab')];
+  function show(id){
+    tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===id?'true':'false'));
+    document.querySelectorAll('section.panel').forEach(p=>p.hidden=p.id!=='p-'+id);
+    try{localStorage.setItem('mm-tab',id)}catch(e){}
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.tab)));
+  document.querySelectorAll('.qcard').forEach(c=>c.addEventListener('click',()=>{show(c.dataset.go);document.querySelector('nav.tabs').scrollIntoView({behavior:'smooth'})}));
+  try{const s=localStorage.getItem('mm-tab');if(s&&document.getElementById('p-'+s))show(s)}catch(e){}
+
+  // ---------- map ----------
+  // 1 unit = 1 cm, 500 x 500
+  // ===== 11/11 보드 맵 그대로 (viewBox 600×410, 노드·간선·구역·CP 동일) =====
+  const N={EX1:[20,220],W:[40,220],J1:[215,220],J2:[300,220],J3:[385,220],E:[560,220],EX2:[580,220],
+    TW:[40,40],T1:[215,40],T2:[385,40],TE:[560,40],BW:[40,340],BM:[300,340],BE:[560,340],DK:[300,370]};
+  const EDGES=[["EX1","W"],["W","J1"],["J1","J2"],["J2","J3"],["J3","E"],["E","EX2"],
+    ["W","TW"],["TW","T1"],["T1","T2"],["T2","TE"],["TE","E"],["T1","J1"],["T2","J3"],
+    ["W","BW"],["BW","BM"],["BM","BE"],["BE","E"],["BM","J2"],["BM","DK"]];
+  const BRANCH=new Set(["TW|W","T1|TW","T1|T2","T2|TE","E|TE","J1|T1","J3|T2","BW|W","BM|BW","BE|BM","BE|E","BM|J2"]);
+  const Z={A1:[60,60,135,120,"A1 보관 랙"],A2:[235,60,130,120,"A2 보관 랙"],A3:[405,60,135,120,"A3 보관 랙"],
+    B1:[60,250,220,70,"B1 작업 라인"],B2:[320,250,220,70,"B2 작업 라인"],
+    C1:[22,207,278,26,"C1"],C2:[300,207,278,26,"C2"],OF:[240,352,120,36,"사무·도크"]};
+  const CPS=[["CP1","TW"],["CP2","T1"],["CP3","T2"],["CP4","TE"],["CP5","W"],["CP6","J1"],["CP7","J2"],["CP8","J3"],["CP9","E"],["CP10","BW"],["CP11","BM"],["CP12","BE"]];
+  const REFCP=["CP1","CP3","CP5","CP7","CP9","CP10","CP12"];
+  const CP={};CPS.forEach(([c,k])=>CP[+c.slice(2)]=N[k]);
+  const DOCK=N.DK;
+  const EV={
+    heat:{x:110,y:66,c:'var(--heat)'},      // A1 랙 하단 · CP1~CP2 사이
+    box:{x:300,y:40,c:'var(--box)'},        // CP2~CP3 사이
+    gas:{x:257,y:220,c:'var(--gas)'},       // CP6~CP7 사이 · LPG 통 옆
+    person:{x:430,y:328,c:'var(--person)'}  // CP11~CP12 사이 (B2 앞)
+  };
+  function mapSVG(opts){
+    const o=opts||{};
+    let s='<svg viewBox="0 0 600 410" role="img" aria-label="미션맵: 위쪽 보관 랙 3개, 가운데 간선, 아래쪽 작업 라인 2개와 사무·도크, CP 12곳">';
+    s+='<rect x="20" y="20" width="560" height="375" fill="var(--floor)"/>';
+    for(const k in Z){const [x,y,w,h,lab]=Z[k];const isC=k[0]==="C";
+      const fill=isC?"transparent":(k[0]==="A"?"color-mix(in srgb,var(--rack) 28%,transparent)":"var(--floor2)");
+      s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${fill}"/>`;
+      if(k[0]==="A")for(let i=1;i<4;i++)s+=`<line x1="${x+8}" x2="${x+w-8}" y1="${y+i*h/4}" y2="${y+i*h/4}" stroke="var(--rack)" stroke-opacity=".5"/>`;
+      if(!isC)s+=`<text x="${x+w/2}" y="${y+h/2+4}" text-anchor="middle" font-size="12" font-weight="600">${lab}</text>`;
+      else s+=`<text x="${k==="C1"?120:472}" y="${y-4}" text-anchor="middle" font-size="11" class="mono">간선 ${k}</text>`;
+    }
+    EDGES.forEach(([a,b])=>{const [x1,y1]=N[a],[x2,y2]=N[b];const br=BRANCH.has([a,b].sort().join("|"));
+      s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--tape-green)" stroke-opacity=".55" stroke-width="${br?2.5:4}" stroke-linecap="round"${b==="DK"?' stroke-dasharray="3 5"':(br?' stroke-dasharray="6 5"':'')}/>`});
+    s+='<path d="M20 200 V20 H580 V200 M580 240 V395 H20 V240" fill="none" stroke="var(--wall)" stroke-width="4" stroke-linejoin="round"/>';
+    s+='<text x="300" y="33" text-anchor="middle" font-size="10.5" font-weight="700" style="fill:var(--accent)">보관동(창고) 구역</text><text x="566" y="390" text-anchor="end" font-size="10.5" font-weight="700" style="fill:var(--person)">작업장 구역</text>';
+    [["EX1",14,"비상구 1",28,"start"],["EX2",574,"비상구 2",572,"end"]].forEach(([k,x,lab,tx,anc])=>{
+      const bad=o.exitBad&&k==="EX1";const c=bad?"var(--crit)":"var(--ok)";
+      s+=`<rect x="${x}" y="200" width="12" height="40" rx="2" fill="${c}"/><text x="${tx}" y="256" text-anchor="${anc}" font-size="11.5" font-weight="700" style="fill:${c}">${lab}${bad?" · 사용 불가":""}</text>`});
+    CPS.forEach(([c,k])=>{const [x,y]=N[k];const rt=x>500,lx=rt?x-11:x+11,ly=y>300?y+20:y-11;
+      s+=`<g><rect x="${x-8}" y="${y-8}" width="16" height="16" fill="var(--marker-bg)" stroke="var(--marker)" stroke-width="2.5"/><rect x="${x-4}" y="${y-4}" width="4" height="4" fill="var(--marker)"/><rect x="${x}" y="${y}" width="4" height="4" fill="var(--marker)"/></g><text x="${lx}" y="${ly}" text-anchor="${rt?"end":"start"}" font-size="11" font-weight="700" class="mono" style="fill:var(--ink);paint-order:stroke" stroke="var(--floor)" stroke-width="3">${c}</text>`});
+    (o.events||[]).forEach(k=>{const e=EV[k];if(!e)return;
+      if(k==='gas')s+=`<rect x="${e.x-6}" y="${e.y-30}" width="12" height="16" rx="4" fill="var(--robot)" stroke="var(--ink)" stroke-opacity=".4"/><ellipse cx="${e.x}" cy="${e.y+2}" rx="26" ry="9" fill="${e.c}" opacity=".35"/><ellipse cx="${e.x}" cy="${e.y+2}" rx="15" ry="5" fill="${e.c}" opacity=".6"/>`;
+      else if(k==='box')s+=`<rect x="${e.x-11}" y="${e.y-11}" width="22" height="22" rx="2" fill="${e.c}" stroke="var(--ink)" stroke-opacity=".35"/>`;
+      else if(k==='heat')s+=`<circle cx="${e.x}" cy="${e.y}" r="10" fill="${e.c}"/><circle cx="${e.x}" cy="${e.y}" r="17" fill="none" stroke="${e.c}" stroke-width="2" opacity=".55"/>`;
+      else if(k==='person')s+=`<rect x="${e.x-15}" y="${e.y-4}" width="30" height="8" rx="4" fill="${e.c}"/><circle cx="${e.x-19}" cy="${e.y}" r="5" fill="${e.c}"/>`;
+      if(o.alert===k)s+=`<circle cx="${e.x}" cy="${e.y}" r="27" fill="none" stroke="var(--crit)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
+    });
+    (o.tags||[]).forEach(([x,y,n])=>{s+=numTag(x,y,n)});
+    (o.paths||[]).forEach(pts=>{s+=`<polyline points="${pts.map(q=>q.join(',')).join(' ')}" fill="none" stroke="var(--ok)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="10 6" opacity=".9"/>`;
+      const e=pts[pts.length-1],f=pts[pts.length-2];const ang=Math.atan2(e[1]-f[1],e[0]-f[0])*180/Math.PI;
+      s+=`<path d="M0 -6 L10 0 L0 6 Z" fill="var(--ok)" transform="translate(${e[0]} ${e[1]}) rotate(${ang}) translate(-6 0)"/>`});
+    if(o.fire){s+=`<circle cx="127" cy="128" r="16" fill="var(--crit)" opacity=".35"/><circle cx="127" cy="128" r="10" fill="var(--crit)"/><text x="127" y="160" text-anchor="middle" font-size="11" font-weight="700" style="fill:var(--crit);paint-order:stroke" stroke="var(--floor)" stroke-width="3">발화 · A1 랙</text>`}
+    (o.xs||[]).forEach(([x,y])=>{s+=`<circle cx="${x}" cy="${y}" r="10" fill="var(--crit)"/><path d="M${x-4.5} ${y-4.5} L${x+4.5} ${y+4.5} M${x+4.5} ${y-4.5} L${x-4.5} ${y+4.5}" stroke="var(--surface)" stroke-width="2.5" stroke-linecap="round"/>`});
+    const RC=['var(--r1)','var(--r2)','var(--r3)','var(--r4)'];
+    (o.moves||[]).forEach(([ri,pts])=>{const rc=RC[ri];s+=`<polyline points="${pts.map(q=>q.join(',')).join(' ')}" fill="none" stroke="${rc}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>`;
+      const e=pts[pts.length-1],f=pts[pts.length-2];const ang=Math.atan2(e[1]-f[1],e[0]-f[0])*180/Math.PI;
+      s+=`<path d="M0 -5 L9 0 L0 5 Z" fill="${rc}" transform="translate(${e[0]} ${e[1]}) rotate(${ang}) translate(-14 0)"/>`});
+    (o.robots||[]).forEach((r,i)=>{if(!r)return;const [x,y]=r;
+      s+=`<g class="robot-g" style="transform:translate(${x}px,${y}px)"><circle r="10" fill="${RC[i]}" stroke="var(--ink)" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" style="fill:${i===2?'#1c2220':'#ffffff'}">${i+1}</text></g>`});
+    (o.signs||[]).forEach(([x,y,a])=>{
+      if(a==='RD'||a==='RU'){s+=`<rect x="${x-14}" y="${y-36}" width="28" height="20" rx="3" fill="var(--ok)"/>`;
+        if(a==='RD')s+=`<path d="M${x-8} ${y-31} H${x+4} V${y-23}" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="miter"/><path d="M${x+0.5} ${y-23.5} L${x+7.5} ${y-23.5} L${x+4} ${y-18.5} Z" fill="#ffffff"/>`;
+        else s+=`<path d="M${x-8} ${y-21} H${x+4} V${y-29}" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="miter"/><path d="M${x+0.5} ${y-28.5} L${x+7.5} ${y-28.5} L${x+4} ${y-33.5} Z" fill="#ffffff"/>`;
+        return}
+      const w=a.length>1?40:28,c=a.length>1?'var(--r4)':'var(--ok)',fs=a.length>1?12:14;s+=`<rect x="${x-w/2}" y="${y-36}" width="${w}" height="20" rx="3" fill="${c}"/><text x="${x}" y="${y-21}" text-anchor="middle" font-size="${fs}" font-weight="700" style="fill:#ffffff">${a}</text>`});
+    s+='</svg>';return s;
+  }
+  function numTag(x,y,n,alt){if(!n)return'';return `<g><circle cx="${x}" cy="${y}" r="10" fill="var(--ink)"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="700" style="fill:var(--bg)">${n}</text></g>`}
+
+  // material map
+  document.getElementById('mapMat').innerHTML=mapSVG({
+    events:['heat','box','gas','person'],
+    tags:[[56,22,1],[150,22,2],[320,22,3],[128,50,4],[530,72,5],[64,196,6],[236,192,7],[284,204,8],[454,312,9],[226,364,10],[36,380,11]]
+  });
+
+  // ---------- scenes ----------
+  const mid=(a,b)=>[(CP[a][0]+CP[b][0])/2,(CP[a][1]+CP[b][1])/2];
+  const SC=[
+    {t:'0:00–0:30',nm:'출동 · 정상 순찰',ds:'모두 도크 앞 CP11에서 왼쪽으로 나가 왼쪽 벽을 타고 올라감. 배 밑 XIAO가 마커를 밟는 순간 번호를 읽어 바로 위치를 앎: 3번은 마커 10에서, 2번은 마커 5에서, 1번은 마커 1에서 자기 줄로 들어감. 이상 없는 구간은 초록',ev:[],rb:[mid(2,3),CP[8],mid(11,12),DOCK],mv:[[0,[[300,370],[300,340],[40,340],[40,40],[290,40]]],[1,[[306,370],[306,346],[46,346],[46,226],[375,226]]],[2,[[294,372],[294,334],[52,334],[52,346],[420,346]]]],log:[['ok','출발 · 모두 CP11에서 왼쪽 → CP10 → 위로'],['ok','3번 마커 10 읽음 → CP10 · 작업장 줄 순찰'],['ok','2번 마커 5 읽음 → CP5 · 간선 순찰'],['ok','1번 마커 1 읽음 → CP1 · 보관동 윗길 순찰']]},
+    {t:'0:30–0:55',nm:'장애물',ds:'보관동 윗길 CP2~CP3 사이에 떨어진 박스. 1번이 초음파로 감지 → 3초 기다렸다 다시 재서 확정 → 멈춤, 매트릭스 X, 음성 → 관제 알림. 치우면 다시 출발',ev:['box'],al:'box',rb:[[272,40],CP[5],CP[12],DOCK],log:[['warn','1번 CP2~CP3 장애물 30 cm · 3초 뒤 재측정 → 확정']]},
+    {t:'0:55–1:20',nm:'과열',ds:'A1 랙 하단 핫팩(CP1~CP2 사이). 1번이 윗길을 돌아오다 온도 센서가 고온 → 그 자리에 멈춰 10초쯤 계속 잼 → 계속 높아 과열 확정, 관리자 호출. 아직 불은 아님',ev:['heat'],al:'heat',rb:[[150,40],CP[5],[430,340],DOCK],log:[['warn','1번 CP1~CP2 A1 랙 하단 52℃ · 멈춰서 계속 측정'],['warn','10초 동안 기준 초과 → 과열 확정 · 관리자 호출']]},
+    {t:'1:20–1:55',nm:'가스 누출 · 4번 재확인',ds:'과열된 A1 랙 아래쪽 간선 CP6~CP7 사이, LPG 통 옆에서 가스가 샘(알코올 솜 컵). 2번 배 밑 MQ-2 값이 올라감 → 멈춤, 음성 "가스 누출이 의심됩니다. 환기하세요" → 노랑. 4번이 도크에서 출동해 구간 입구에서 다시 재고 → 빨강 확정',ev:['heat','gas'],al:'gas',rb:[[150,40],[232,220],[430,340],[282,220]],mv:[[1,[[46,226],[222,226]]],[3,[[300,370],[300,226],[292,226]]]],log:[['warn','2번 CP6~CP7 가연성 가스 감지 (LPG 통 옆) · 미확정'],['info','관제 → 4번 재확인 출동 (도크 → CP11 → CP7)'],['crit','4번 CP6~CP7 재측정 → 가스 누출 확정']]},
+    {t:'1:55–2:45',nm:'화재 → 대피 모드',ds:'과열된 A1 랙에 불이 붙음. 노트북 "서쪽 화재" 버튼(기존 화재 감지기 역할) → 4대가 위험 구역 대피 모드. 방금 확정된 가스 누출 구간(CP6~CP7)은 X. 가스 구간이 간선을 끊으니, 건너지 않게 나눠 안내: 2번 CP6 ← 서쪽 사람은 비상구 1로, 1번 CP2 ↴ 보관동 사람은 윗길 따라 CP3 → CP8 → 비상구 2로, 3번 CP11 오른쪽→위 작업장 사람은 CP12 → CP9 → 비상구 2로. 매트릭스 화살표 + 음성 안내. 4번은 안내 대신 작업장으로 들어가 미처 대피하지 못한 사람을 찾기 시작',ev:['heat','gas'],fire:true,xs:[[257,240]],signs:[[215,40,'RD'],[215,220,'←'],[300,340,'RU'],[395,340,'수색']],rb:[CP[2],CP[6],CP[11],[395,340]],log:[['crit','관제 · 서쪽 화재 신호 (A1 랙) → 위험 구역 대피 모드'],['crit','가스 구간 CP6~CP7 X · 건너지 않게 서쪽은 비상구 1, 동쪽은 비상구 2'],['warn','1번 CP2 ↴ · 2번 CP6 ← · 3번 CP11 오른쪽→위'],['info','4번 작업장 수색 시작 · 미처 대피하지 못한 사람 찾기'],['warn','음성 "왼쪽 비상구 1로" / "오른쪽 비상구 2로 대피하세요"']]},
+    {t:'2:45–3:10',nm:'쓰러짐 · 대피 못 한 사람',ds:'작업장을 수색하던 4번이 CP11~CP12 사이 B2 앞에서 쓰러진 작업자(인형) 발견 → 멈춤, "괜찮으세요?" → 재확인 없이 바로 빨강 긴급 + 위치 전송',ev:['heat','gas','person'],al:'person',fire:true,xs:[[257,240]],signs:[[215,40,'RD'],[215,220,'←'],[300,340,'RU']],rb:[CP[2],CP[6],CP[11],[395,340]],log:[['crit','4번 CP11~CP12 작업자 쓰러짐 (B2 앞) · 대피 못 한 사람 · 즉시 긴급']]},
+    {t:'3:10–3:30',nm:'마무리',ds:'전원 정지. 관제 화면의 이벤트 로그(시간·위치·종류)가 그대로 순찰 보고서. 고정 유도등은 가스 구간을 몰라 그 길로 보내지만, 메카독은 순찰로 알고 피해서 안내하고 남은 사람까지 찾음',ev:['heat','gas','person'],fire:true,xs:[[257,240]],rb:[CP[2],CP[6],CP[11],[395,340]],log:[['ok','순찰 보고서 생성 · 이벤트 4건 + 대피 1건']]}
+  ];
+  let cur=0;
+  const list=document.getElementById('sceneList');
+  list.innerHTML=SC.map((s,i)=>`<button class="scene" data-i="${i}" aria-pressed="false"><span class="t">${s.t}</span><span><span class="nm">${s.nm}</span><br><span class="ds">${s.ds}</span></span></button>`).join('');
+  const col={ok:'var(--ok)',warn:'var(--warn)',crit:'var(--crit)',info:'var(--info)'};
+  function render(){
+    const s=SC[cur];
+    document.getElementById('mapFlow').innerHTML=mapSVG({events:s.ev,robots:s.rb,alert:s.al,fire:s.fire,exitBad:s.exitBad,paths:s.paths,xs:s.xs,signs:s.signs,moves:s.mv});
+    list.querySelectorAll('.scene').forEach((b,i)=>b.setAttribute('aria-pressed',i===cur?'true':'false'));
+    document.getElementById('sceneNow').textContent=`${cur+1} / ${SC.length} · ${s.nm}`;
+    const all=SC.slice(0,cur+1).flatMap(x=>x.log.map(l=>[x.t.split('–')[0],...l]));
+    document.getElementById('log').innerHTML=all.length?all.map(([t,k,m])=>`<div><span class="muted">${t}</span><i class="dot" style="background:${col[k]}"></i><span>${m}</span></div>`).join(''):'<div class="muted">아직 기록 없음</div>';
+  }
+  list.addEventListener('click',e=>{const b=e.target.closest('.scene');if(b){cur=+b.dataset.i;render()}});
+  document.getElementById('prevS').onclick=()=>{cur=(cur-1+SC.length)%SC.length;render()};
+  document.getElementById('nextS').onclick=()=>{cur=(cur+1)%SC.length;render()};
+  render();
+
+  // ---------- cost ----------
+  const st={pow:'port',heat:'kit'};
+  function seg(id,key){const el=document.getElementById(id);el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));st[key]=b.dataset.v;cost()})}
+  seg('segPow','pow');seg('segHeat','heat');
+  const won=n=>n%10000?n.toLocaleString('ko-KR')+'원':(n/10000)+'만 원';
+  function cost(){
+    let lo=0,hi=0;
+    if(st.pow==='bat'){lo+=40000;hi+=40000}
+    if(st.heat==='mlx'){lo+=11200;hi+=11200}
+    lo+=0;
+    document.getElementById('costBig').textContent=lo===0?'0원':(lo===hi?won(lo):won(lo)+' ~ '+won(hi));
+    const can=['ArUco 체크포인트','장애물','쓰러짐 (조끼 색)','가스 누출','과열'];
+    document.getElementById('gets').innerHTML=can.map(n=>'<div class="get"><span class="pill kit">가능</span>'+n+'</div>').join('');
+    const notes=[];
+    if(st.pow==='port')notes.push('메카독 포트 5V로 XIAO가 돌아가는지 먼저 시험합니다. 영상 찍을 때 최대 약 350 mA를 씁니다.');
+    else notes.push('배터리는 메카독 전원과 분리돼서 가장 안전합니다. 대신 무게와 충전할 것이 늘어납니다.');
+    notes.push('가스 센서 MQ-2는 아두이노 키트 것을 쓰고, 없으면 약 2천 원이면 삽니다 (아래 구매처).');
+    if(st.heat==='kit')notes.push('키트 온도 센서는 주변 공기를 재서 핫팩 바로 옆을 지나가며 잠깐 멈춰야 합니다. 반응이 약하면 MLX90614로 바꿉니다.');
+    else notes.push('MLX90614는 체온계처럼 겨눈 곳의 표면 온도를 바로 잽니다. 아이씨뱅큐 11,200원 기준 (반품 불가 상품).');
+    document.getElementById('costNote').innerHTML=notes.join('<br>');
+  }
+  cost();
+
+  // ---------- checks ----------
+  document.querySelectorAll('.checks input').forEach(cb=>{
+    try{cb.checked=localStorage.getItem('mm-'+cb.id)==='1'}catch(e){}
+    const upd=()=>cb.closest('li').classList.toggle('done',cb.checked);upd();
+    cb.addEventListener('change',()=>{upd();try{localStorage.setItem('mm-'+cb.id,cb.checked?'1':'0')}catch(e){}});
+  });
+})();
+</script>
+
+</body>
+</html>
